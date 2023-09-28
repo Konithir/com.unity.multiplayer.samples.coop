@@ -80,6 +80,35 @@ namespace Unity.BossRoom.Gameplay.Actions
         }
 
         /// <summary>
+        /// Detects all friends and/or foes in range.
+        /// </summary>
+        /// <param name="wantPcs">true if we should detect PCs</param>
+        /// <param name="wantNpcs">true if we should detect NPCs</param>
+        /// <param name="attacker">The collider of the attacking GameObject.</param>
+        /// <param name="range">The range in meters to check.</param>
+        /// <param name="results">Place an uninitialized RayCastHit[] ref in here. It will be set to the results array. </param>
+        /// <returns></returns>
+        public static Collider[] DetectAllEntitiesInRange(bool wantPcs, bool wantNpcs, Collider attacker, float range)
+        {
+            var myBounds = attacker.bounds;
+
+            if (s_PCLayer == -1)
+                s_PCLayer = LayerMask.NameToLayer("PCs");
+            if (s_NpcLayer == -1)
+                s_NpcLayer = LayerMask.NameToLayer("NPCs");
+
+            int mask = 0;
+            if (wantPcs)
+                mask |= (1 << s_PCLayer);
+            if (wantNpcs)
+                mask |= (1 << s_NpcLayer);
+
+            Collider[] hitColliders = Physics.OverlapSphere(attacker.transform.position, range, mask);
+
+            return hitColliders;
+        }
+
+        /// <summary>
         /// Does this NetId represent a valid target? Used by Target Action. The target needs to exist, be a
         /// NetworkCharacterState, and be alive. In the future, it will be any non-dead IDamageable.
         /// </summary>

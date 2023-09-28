@@ -51,12 +51,11 @@ namespace Unity.BossRoom.Gameplay.Actions
 
         private void RegenManaInArea(ServerCharacter clientCharacter)
         {
-            RaycastHit[] results;
-            int numResults = ActionUtils.DetectNearbyEntities(true, false, clientCharacter.physicsWrapper.DamageCollider, Config.Radius, out results);
+            Collider[] hitColliders = ActionUtils.DetectAllEntitiesInRange(true, false, clientCharacter.physicsWrapper.DamageCollider, Config.Radius);
 
-            for (int i = 0; i < numResults; i++)
+            for (int i = 0; i < hitColliders.Length; i++)
             {
-                RegenMana(clientCharacter, results[i].collider);
+                RegenMana(clientCharacter, hitColliders[i]);
             }
         }
 

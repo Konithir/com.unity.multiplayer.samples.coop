@@ -18,15 +18,20 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Audio
         [SerializeField]
         NetworkHealthState m_NetworkHealthState;
 
+        [SerializeField]
+        NetworkManaState m_NetworkManaState;
+
         bool m_Won;
 
         void Start()
         {
             Assert.IsNotNull(m_NetworkLifeState, "NetworkLifeState not set!");
             Assert.IsNotNull(m_NetworkHealthState, "NetworkHealthState not set!");
+            Assert.IsNotNull(m_NetworkManaState, "NetworkManaState not set!");
 
             m_NetworkLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
             m_NetworkHealthState.HitPoints.OnValueChanged += OnHealthChanged;
+            m_NetworkManaState.ManaPoints.OnValueChanged += OnHealthChanged;
         }
 
         void OnDestroy()
@@ -38,6 +43,11 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Audio
                 if (serverCharacter.NetHealthState != null)
                 {
                     serverCharacter.NetHealthState.HitPoints.OnValueChanged -= OnHealthChanged;
+                }
+
+                if (serverCharacter.NetManaState != null)
+                {
+                    serverCharacter.NetManaState.ManaPoints.OnValueChanged -= OnHealthChanged;
                 }
             }
         }

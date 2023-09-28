@@ -57,6 +57,8 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
 
         public NetworkHealthState NetHealthState { get; private set; }
 
+        public NetworkManaState NetManaState { get; private set; }
+
         /// <summary>
         /// The active target of this character.
         /// </summary>
@@ -69,6 +71,15 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
         {
             get => NetHealthState.HitPoints.Value;
             private set => NetHealthState.HitPoints.Value = value;
+        }
+
+        /// <summary>
+        /// Current Mana. This value is populated at startup time from CharacterClass data.
+        /// </summary>
+        public int ManaPoints
+        {
+            get => NetManaState.ManaPoints.Value;
+            private set => NetManaState.ManaPoints.Value = value;
         }
 
         public NetworkLifeState NetLifeState { get; private set; }
@@ -121,10 +132,13 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
 
 
         [SerializeField]
-        DamageReceiver m_DamageReceiver;
+        private DamageReceiver m_DamageReceiver;
 
         [SerializeField]
-        ServerCharacterMovement m_Movement;
+        private ManaReceiver m_ManaReceiver;
+
+        [SerializeField]
+        private ServerCharacterMovement m_Movement;
 
         public ServerCharacterMovement Movement => m_Movement;
 
@@ -146,6 +160,7 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
             m_ServerActionPlayer = new ServerActionPlayer(this);
             NetLifeState = GetComponent<NetworkLifeState>();
             NetHealthState = GetComponent<NetworkHealthState>();
+            NetManaState = GetComponent<NetworkManaState>();
             m_State = GetComponent<NetworkAvatarGuidState>();
         }
 
@@ -157,6 +172,7 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
                 NetLifeState.LifeState.OnValueChanged += OnLifeStateChanged;
                 m_DamageReceiver.DamageReceived += ReceiveHP;
                 m_DamageReceiver.CollisionEntered += CollisionEntered;
+                m_ManaReceiver.ManaReceived += ReceiveMana;
 
                 if (IsNpc)
                 {
@@ -169,6 +185,7 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
                     PlayAction(ref startingAction);
                 }
                 InitializeHitPoints();
+                InitializeManaPoints();
             }
         }
 
@@ -180,6 +197,7 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
             {
                 m_DamageReceiver.DamageReceived -= ReceiveHP;
                 m_DamageReceiver.CollisionEntered -= CollisionEntered;
+                m_ManaReceiver.ManaReceived -= ReceiveMana;
             }
         }
 
@@ -253,6 +271,11 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
                     }
                 }
             }
+        }
+
+        void InitializeManaPoints()
+        {
+            ManaPoints = CharacterClass.BaseMana;
         }
 
         /// <summary>
@@ -350,6 +373,26 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects.Character
 
                 m_ServerActionPlayer.ClearActions(false);
             }
+        }
+
+
+        /// <summary>
+        /// Receive an Mana change from somewhere.
+        /// </summary>
+        public void ReceiveMana(ServerCharacter inflicter, int Mana)
+        {
+            if(Mana > 0)
+            {
+                m_ServerActionPlayer.OnGameplayActivity(Action.GameplayActivity.RegainMana);
+            }
+            else
+            {
+                m_ServerActionPlayer.OnGameplayActivity(Action.GameplayActivity.LoseMana);              
+            }
+
+            //Just to show that the spell is working
+            serverAnimationHandler.NetworkAnimator.SetTrigger("HitReact1");
+            ManaPoints = Mathf.Clamp(ManaPoints + Mana, 0, CharacterClass.BaseMana);
         }
 
         /// <summary>

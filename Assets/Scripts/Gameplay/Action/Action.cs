@@ -190,6 +190,8 @@ namespace Unity.BossRoom.Gameplay.Actions
             Healed,
             StoppedChargingUp,
             UsingAttackAction, // called immediately before we perform the attack Action
+            RegainMana,
+            LoseMana
         }
 
         /// <summary>
