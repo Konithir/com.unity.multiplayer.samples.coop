@@ -12,10 +12,10 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects
         [HideInInspector]
         public NetworkVariable<int> ManaPoints = new NetworkVariable<int>();
 
-        // public subscribable event to be invoked when HP has been fully depleted
+        // public subscribable event to be invoked when Mana has been fully depleted
         public event Action ManaPointsDepleted;
 
-        // public subscribable event to be invoked when HP has been replenished
+        // public subscribable event to be invoked when Mana has been replenished
         public event Action ManaPointsReplenished;
 
         void OnEnable()
@@ -32,12 +32,12 @@ namespace Unity.BossRoom.Gameplay.GameplayObjects
         {
             if (previousValue > 0 && newValue <= 0)
             {
-                // newly reached 0 HP
+                // newly reached 0 Mana
                 ManaPointsDepleted?.Invoke();
             }
             else if (previousValue <= 0 && newValue > 0)
             {
-                // newly revived
+                // newly replenished mana
                 ManaPointsReplenished?.Invoke();
             }
         }
